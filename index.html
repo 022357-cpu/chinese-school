@@ -3,494 +3,651 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>중국어 어휘 암기 웹</title>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <title>스마트 영단어장 (Day 1 ~ Day 8 전체 수록)</title>
   <style>
     :root {
-      --primary: #4f46e5;
-      --bg: #f3f4f6;
-      --card-bg: #ffffff;
-      --text: #1f2937;
-      --tone1: #ef4444;
-      --tone2: #f59e0b;
-      --tone3: #10b981;
-      --tone4: #3b82f6;
-      --tone0: #6b7280;
+      --primary: #4F46E5;
+      --primary-hover: #4338CA;
+      --bg: #F3F4F6;
+      --card-bg: #FFFFFF;
+      --text: #1F2937;
+      --text-sub: #6B7280;
+      --accent: #10B981;
     }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg);
       color: var(--text);
-      margin: 0;
-      padding: 20px;
+      padding: 20px 10px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .progress-bar-container {
+      background: #E5E7EB;
+      border-radius: 10px;
+      height: 12px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .progress-bar {
+      background: var(--accent);
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .stats {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    /* Day Main Tabs */
+    .day-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+
+    .day-tab {
+      background: #E5E7EB;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .day-tab.active {
+      background: var(--primary);
+      color: #FFF;
+    }
+
+    /* Sub Tabs & Controls */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .sub-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .sub-tab {
+      background: #FFFFFF;
+      border: 1px solid #D1D5DB;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .sub-tab.active {
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: bold;
+      background: #EEF2FF;
+    }
+
+    .search-input {
+      padding: 8px 12px;
+      border: 1px solid #D1D5DB;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      flex-grow: 1;
+      max-width: 250px;
+    }
+
+    .btn-test {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Word Grid */
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 15px;
+    }
+
+    .word-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
-    h1 { font-size: 1.5rem; color: var(--primary); margin-bottom: 8px; }
-    
-    .tone-legend {
-      display: flex;
-      gap: 10px;
-      font-size: 0.8rem;
-      margin-bottom: 15px;
-      background: #fff;
-      padding: 6px 14px;
-      border-radius: 20px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    }
-    .t1 { color: var(--tone1); font-weight: bold; }
-    .t2 { color: var(--tone2); font-weight: bold; }
-    .t3 { color: var(--tone3); font-weight: bold; }
-    .t4 { color: var(--tone4); font-weight: bold; }
-    .t0 { color: var(--tone0); font-weight: bold; }
-
-    .tab-group, .sub-tab-group { display: flex; gap: 8px; margin-bottom: 15px; }
-    .tab-btn, .sub-tab-btn {
-      padding: 8px 16px;
-      border: 1px solid var(--primary);
-      background: transparent;
-      color: var(--primary);
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .tab-btn.active, .sub-tab-btn.active { background: var(--primary); color: white; }
-    .sub-tab-btn { font-size: 0.85rem; padding: 5px 12px; }
-
-    .view-section { width: 100%; max-width: 480px; display: flex; flex-direction: column; align-items: center; }
-    
-    /* 플래시카드 */
-    .card-container { perspective: 1000px; width: 100%; height: 260px; cursor: pointer; margin-bottom: 15px; }
-    .card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s; box-shadow: 0 10px 25px rgba(0,0,0,0.08); border-radius: 16px; }
-    .card.flipped { transform: rotateY(180deg); }
-    .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; background: var(--card-bg); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; }
-    .card-back { transform: rotateY(180deg); background: #fef3c7; }
-    .hanzi { font-size: 3rem; font-weight: bold; margin-bottom: 6px; }
-    .pinyin { font-size: 1.4rem; font-weight: 600; margin-bottom: 6px; }
-    .meaning { font-size: 1.1rem; color: #374151; }
-    .pos { font-size: 0.85rem; color: #6b7280; background: #e5e7eb; padding: 2px 10px; border-radius: 12px; margin-top: 8px; }
-    
-    .btn { padding: 10px 16px; border: none; border-radius: 8px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
-    .btn-secondary { background: #6b7280; }
-    .btn-audio { background: #059669; }
-
-    /* 퀴즈 */
-    .quiz-container { background: white; width: 100%; padding: 20px; border-radius: 16px; box-sizing: border-box; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .quiz-options { display: flex; flex-direction: column; gap: 10px; }
-    .quiz-opt-btn { padding: 12px; border: 2px solid #e5e7eb; border-radius: 10px; background: white; cursor: pointer; text-align: left; }
-    .quiz-opt-btn.correct { background: #d1fae5; border-color: #10b981; }
-    .quiz-opt-btn.wrong { background: #fee2e2; border-color: #ef4444; }
-
-    /* 산성비 게임 */
-    .rain-game-area {
-      width: 100%;
-      height: 320px;
-      background: #1e293b;
-      border-radius: 16px;
+      justify-content: space-between;
       position: relative;
-      overflow: hidden;
-      margin-bottom: 12px;
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
     }
-    .falling-word {
-      position: absolute;
-      color: white;
+
+    .word-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .word-card.memorized {
+      opacity: 0.55;
+      background: #F9FAFB;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .word-title {
       font-size: 1.3rem;
       font-weight: bold;
-      background: rgba(255,255,255,0.15);
-      padding: 4px 10px;
-      border-radius: 8px;
-      white-space: nowrap;
-      transition: top 0.1s linear;
+      color: var(--primary);
     }
-    .rain-input {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid var(--primary);
-      border-radius: 8px;
+
+    .pos {
+      font-size: 0.75rem;
+      color: #9CA3AF;
+      font-style: italic;
+      margin-left: 4px;
+    }
+
+    .audio-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    .meaning {
       font-size: 1rem;
-      box-sizing: border-box;
-      outline: none;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #374151;
     }
 
-    /* 짝맞추기 게임 */
-    .match-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
-    .match-card { height: 80px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; }
-    .match-card.selected { border-color: #4f46e5; background-color: #e0e7ff; }
-    .match-card.matched { visibility: hidden; opacity: 0; }
+    .example-box {
+      background: #F9FAFB;
+      border-left: 3px solid var(--primary);
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      margin-top: 8px;
+    }
 
-    /* 목록 */
-    .list-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; }
-    .list-table th, .list-table td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+    .ex-en { font-style: italic; margin-bottom: 2px; }
+    .ex-kr { color: #4B5563; }
+
+    .card-bottom {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #F3F4F6;
+      padding-top: 10px;
+    }
+
+    .day-badge {
+      font-size: 0.75rem;
+      background: #E0E7FF;
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .check-btn {
+      background: none;
+      border: 1px solid #D1D5DB;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .check-btn.checked {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Modal / Quiz */
+    .modal {
+      display: none;
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 450px;
+      text-align: center;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .quiz-opt {
+      padding: 10px;
+      border: 1px solid #D1D5DB;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #F9FAFB;
+      font-weight: 500;
+    }
+
+    .quiz-opt:hover { background: #EEF2FF; }
+
+    .close-btn {
+      background: #6B7280;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-  <h1>중국어 어휘 암기 웹</h1>
+<div class="container">
+  <header>
+    <h1>전체 필수 영단어장</h1>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="stats">
+      <span>전체 수록 단어: <strong id="totalCount">0</strong>개</span>
+      <span>암기 완료율: <strong id="progressPercent">0%</strong></span>
+    </div>
+  </header>
 
-  <div class="tone-legend">
-    <span class="t1">1성 (―)</span>
-    <span class="t2">2성 (/)</span>
-    <span class="t3">3성 (∨)</span>
-    <span class="t4">4성 (\)</span>
-    <span class="t0">경성 (.)</span>
+  <div class="day-tabs" id="dayTabs">
+    <button class="day-tab active" data-day="all">전체</button>
+    <button class="day-tab" data-day="1">Day 1</button>
+    <button class="day-tab" data-day="2">Day 2</button>
+    <button class="day-tab" data-day="3">Day 3</button>
+    <button class="day-tab" data-day="4">Day 4</button>
+    <button class="day-tab" data-day="5">Day 5</button>
+    <button class="day-tab" data-day="6">Day 6</button>
+    <button class="day-tab" data-day="7">Day 7</button>
+    <button class="day-tab" data-day="8">Day 8</button>
   </div>
 
-  <div class="tab-group">
-    <button class="tab-btn active" onclick="switchTab('card')">플래시카드</button>
-    <button class="tab-btn" onclick="switchTab('quiz')">4지선다</button>
-    <button class="tab-btn" onclick="switchTab('game')">🎮 미니게임</button>
-    <button class="tab-btn" onclick="switchTab('list')">전체목록</button>
+  <div class="controls">
+    <div class="sub-tabs" id="subTabs">
+      <button class="sub-tab active" data-filter="all">전체 보기</button>
+      <button class="sub-tab" data-filter="unmemorized">미암기</button>
+      <button class="sub-tab" data-filter="memorized">암기완료</button>
+    </div>
+    <input type="text" class="search-input" id="searchInput" placeholder="단어 또는 뜻 검색...">
+    <button class="btn-test" onclick="startQuiz()">단어 테스트 시작</button>
   </div>
 
-  <div id="cardView" class="view-section">
-    <div class="card-container" onclick="flipCard()">
-      <div class="card" id="card">
-        <div class="card-face card-front">
-          <div class="hanzi" id="frontHanzi">大小</div>
-          <button class="btn btn-audio" onclick="event.stopPropagation(); speakCurrentWord();">🔊 발음 듣기</button>
-          <div style="font-size:0.8rem; color:#9ca3af; margin-top:15px;">⌨️ Enter: 뒤집기 / 다음 단어</div>
-        </div>
-        <div class="card-face card-back">
-          <div class="pinyin" id="backPinyin">dàxiǎo</div>
-          <div class="meaning" id="backMeaning">크기</div>
-          <div class="pos" id="backPos">명사</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex; gap:8px;">
-      <button class="btn btn-secondary" onclick="prevCard()">이전</button>
-      <button class="btn" onclick="nextCard()">다음</button>
-      <button class="btn btn-secondary" onclick="shuffleCards()">🎲 섞기</button>
-    </div>
-    <div style="margin-top:10px; font-size:0.9rem; color:#6b7280;" id="progressText">1 / 100</div>
+  <div class="word-grid" id="wordGrid"></div>
+</div>
+
+<div class="modal" id="quizModal">
+  <div class="modal-content">
+    <h3 style="margin-bottom:10px;">단어 테스트</h3>
+    <h2 id="quizWord" style="color:var(--primary); margin-bottom:20px;">Word</h2>
+    <div class="quiz-options" id="quizOptions"></div>
+    <button class="close-btn" onclick="closeQuiz()">닫기</button>
   </div>
+</div>
 
-  <div id="quizView" class="view-section" style="display:none;">
-    <div class="quiz-container">
-      <div style="text-align:center; margin-bottom:15px;">
-        <div class="hanzi" id="quizHanzi">大小</div>
-        <button class="btn btn-audio" onclick="speakWord(currentQuizWord.hanzi)" style="padding:4px 10px; font-size:0.8rem;">🔊 발음</button>
-      </div>
-      <div class="quiz-options" id="quizOptions"></div>
-      <div style="text-align:center; margin-top:15px; font-weight:bold;" id="quizScore">점수: 0 / 0</div>
-      <button class="btn" onclick="nextQuiz()" style="width:100%; margin-top:10px; justify-content:center;">다음 문제 ➔</button>
-    </div>
-  </div>
+<script>
+  // Complete dataset (120 words across Day 1 ~ Day 8)
+  const words = [
+    // Day 1
+    { id: 1, day: 1, word: "abandon", pos: "v.", meaning: "버리다, 포기하다", example: "He had to abandon his car in the snow.", exMeaning: "그는 눈 속에 차를 버려야 했다." },
+    { id: 2, day: 1, word: "abundant", pos: "adj.", meaning: "풍부한, 많은", example: "The country has abundant natural resources.", exMeaning: "그 나라는 풍부한 천연자원을 가지고 있다." },
+    { id: 3, day: 1, word: "accommodate", pos: "v.", meaning: "수용하다, 숙박시키다", example: "The hotel can accommodate up to 500 guests.", exMeaning: "그 호텔은 최대 500명의 손님을 수용할 수 있다." },
+    { id: 4, day: 1, word: "accumulate", pos: "v.", meaning: "축적하다, 모으다", example: "Dust quickly accumulates on books.", exMeaning: "책 위에 먼지가 빠르게 쌓인다." },
+    { id: 5, day: 1, word: "accurate", pos: "adj.", meaning: "정확한, 정밀한", example: "The report was accurate and detailed.", exMeaning: "그 보고서는 정확하고 상세했다." },
+    { id: 6, day: 1, word: "accuse", pos: "v.", meaning: "고발하다, 비난하다", example: "She was accused of stealing the money.", exMeaning: "그녀는 돈을 훔친 혐의로 고소당했다." },
+    { id: 7, day: 1, word: "achieve", pos: "v.", meaning: "달성하다, 성취하다", example: "She achieved her dream of becoming a doctor.", exMeaning: "그녀는 의사가 되겠다는 꿈을 이뤘다." },
+    { id: 8, day: 1, word: "acknowledge", pos: "v.", meaning: "인정하다, 승인하다", example: "He acknowledged his mistake publicly.", exMeaning: "그는 자신의 실수를 공개적으로 인정했다." },
+    { id: 9, day: 1, word: "acquire", pos: "v.", meaning: "습득하다, 얻다", example: "Language skills are acquired through practice.", exMeaning: "언어 기술은 연습을 통해 습득된다." },
+    { id: 10, day: 1, word: "adapt", pos: "v.", meaning: "적응하다, 맞추다", example: "Animals adapt to their environment over time.", exMeaning: "동물들은 시간이 지나면서 환경에 적응한다." },
+    { id: 11, day: 1, word: "adequate", pos: "adj.", meaning: "충분한, 적절한", example: "Make sure you get adequate rest.", exMeaning: "충분한 휴식을 취하도록 하세요." },
+    { id: 12, day: 1, word: "adjust", pos: "v.", meaning: "조절하다, 적응하다", example: "You need to adjust the volume.", exMeaning: "볼륨을 조절해야 합니다." },
+    { id: 13, day: 1, word: "admire", pos: "v.", meaning: "감탄하다, 존경하다", example: "I admire her dedication to work.", exMeaning: "나는 그녀의 일에 대한 헌신에 감탄한다." },
+    { id: 14, day: 1, word: "adopt", pos: "v.", meaning: "채택하다, 입양하다", example: "The company adopted a new strategy.", exMeaning: "회사는 새로운 전략을 채택했다." },
+    { id: 15, day: 1, word: "advance", pos: "v./n.", meaning: "전진하다, 발전", example: "Technology continues to advance rapidly.", exMeaning: "기술은 계속해서 빠르게 발전하고 있다." },
 
-  <div id="gameView" class="view-section" style="display:none;">
-    <div class="sub-tab-group">
-      <button class="sub-tab-btn active" onclick="switchSubGame('rain')">🌧️ 단어 산성비</button>
-      <button class="sub-tab-btn" onclick="switchSubGame('match')">🧩 카드 짝맞추기</button>
-    </div>
+    // Day 2
+    { id: 16, day: 2, word: "advocate", pos: "v./n.", meaning: "옹호하다, 주창자", example: "She advocates for environmental protection.", exMeaning: "그녀는 환경 보호를 옹호한다." },
+    { id: 17, day: 2, word: "affect", pos: "v.", meaning: "영향을 미치다", example: "Cold weather affects plant growth.", exMeaning: "추운 날씨는 식물의 성장에 영향을 미친다." },
+    { id: 18, day: 2, word: "afford", pos: "v.", meaning: "~할 여유가 있다", example: "I cannot afford to buy a new car.", exMeaning: "나는 새 차를 살 여유가 없다." },
+    { id: 19, day: 2, word: "aggregate", pos: "adj./n.", meaning: "합계의, 총액", example: "The aggregate cost was higher than expected.", exMeaning: "총비용은 예상보다 높았다." },
+    { id: 20, day: 2, word: "aggressive", pos: "adj.", meaning: "공격적인, 적극적인", example: "They launched an aggressive marketing campaign.", exMeaning: "그들은 적극적인 마케팅 캠페인을 시작했다." },
+    { id: 21, day: 2, word: "allocate", pos: "v.", meaning: "할당하다, 배분하다", example: "Funds were allocated for the project.", exMeaning: "그 프로젝트를 위해 자금이 할당되었다." },
+    { id: 22, day: 2, word: "alter", pos: "v.", meaning: "변경하다, 바꾸다", example: "The schedule was altered slightly.", exMeaning: "일정이 약간 변경되었다." },
+    { id: 23, day: 2, word: "alternative", pos: "n./adj.", meaning: "대안, 대체의", example: "We need to find an alternative solution.", exMeaning: "우리는 대안적인 해결책을 찾아야 한다." },
+    { id: 24, day: 2, word: "ambiguous", pos: "adj.", meaning: "모호한, 애매한", example: "His answer was ambiguous and unclear.", exMeaning: "그의 대답은 모호하고 불분명했다." },
+    { id: 25, day: 2, word: "analyze", pos: "v.", meaning: "분석하다", example: "Scientists analyzed the data carefully.", exMeaning: "과학자들은 데이터를 주의 깊게 분석했다." },
+    { id: 26, day: 2, word: "annual", pos: "adj.", meaning: "연례의, 해마다의", example: "The annual conference takes place in May.", exMeaning: "연례 회의는 5월에 열린다." },
+    { id: 27, day: 2, word: "anticipate", pos: "v.", meaning: "예상하다, 기대하다", example: "We anticipate good results this quarter.", exMeaning: "우리는 이번 분기에 좋은 결과를 예상한다." },
+    { id: 28, day: 2, word: "apparent", pos: "adj.", meaning: "명백한, 언뜻 보기에 ~인", example: "It became apparent that he was lying.", exMeaning: "그가 거짓말을 하고 있다는 것이 명백해졌다." },
+    { id: 29, day: 2, word: "appeal", pos: "v./n.", meaning: "호소하다, 매력", example: "The design appeals to young consumers.", exMeaning: "그 디자인은 젊은 소비자들에게 매력적이다." },
+    { id: 30, day: 2, word: "apply", pos: "v.", meaning: "지원하다, 적용하다", example: "You can apply for the job online.", exMeaning: "온라인으로 일자리에 지원할 수 있습니다." },
 
-    <div id="rainGameSection" style="width:100%;">
-      <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-weight:bold;">
-        <span>점수: <span id="rainScore" style="color:var(--primary);">0</span></span>
-        <span>목숨: <span id="rainLives">❤️❤️❤️</span></span>
-      </div>
-      <div class="rain-game-area" id="rainArea"></div>
-      <input type="text" id="rainInput" class="rain-input" placeholder="떨어지는 한자의 뜻이나 병음을 입력 후 Enter!" onkeydown="checkRainInput(event)">
-      <button class="btn" onclick="startRainGame()" style="width:100%; margin-top:10px; justify-content:center;">🎮 게임 시작 / 리셋</button>
-    </div>
+    // Day 3
+    { id: 31, day: 3, word: "appreciate", pos: "v.", meaning: "감사하다, 진가를 알아보다", example: "I really appreciate your help.", exMeaning: "당신의 도움에 진심으로 감사드립니다." },
+    { id: 32, day: 3, word: "approach", pos: "v./n.", meaning: "접근하다, 접근법", example: "A new approach is needed to solve this problem.", exMeaning: "이 문제를 해결하려면 새로운 접근법이 필요하다." },
+    { id: 33, day: 3, word: "appropriate", pos: "adj.", meaning: "적절한, 알맞은", example: "Wear appropriate clothes for the interview.", exMeaning: "면접에 적절한 옷을 입으세요." },
+    { id: 34, day: 3, word: "approve", pos: "v.", meaning: "승인하다, 찬성하다", example: "The manager approved the budget.", exMeaning: "매니저가 예산을 승인했다." },
+    { id: 35, day: 3, word: "approximate", pos: "adj.", meaning: "대략적인", example: "The approximate cost is $100.", exMeaning: "대략적인 비용은 100달러이다." },
+    { id: 36, day: 3, word: "arbitrary", pos: "adj.", meaning: "임의의, 제멋대로인", example: "The decision was completely arbitrary.", exMeaning: "그 결정은 완전히 임의적이었다." },
+    { id: 37, day: 3, word: "architect", pos: "n.", meaning: "건축가, 설계자", example: "The architect designed a modern skyscraper.", exMeaning: "그 건축가는 현대적인 초고층 건물을 설계했다." },
+    { id: 38, day: 3, word: "assess", pos: "v.", meaning: "평가하다, 사정하다", example: "Teachers assess student progress regularly.", exMeaning: "교사들은 정기적으로 학생의 진도를 평가한다." },
+    { id: 39, day: 3, word: "assign", pos: "v.", meaning: "할당하다, 지정하다", example: "The teacher assigned homework to the class.", exMeaning: "선생님이 학급에 숙제를 내주었다." },
+    { id: 40, day: 3, word: "assist", pos: "v.", meaning: "돕다, 보조하다", example: "She assisted the doctor during surgery.", exMeaning: "그녀는 수술 중 의사를 도왔다." },
+    { id: 41, day: 3, word: "assume", pos: "v.", meaning: "추정하다, 맡다", example: "Don't assume everything you hear is true.", exMeaning: "듣는 모든 것이 사실이라고 추정하지 마라." },
+    { id: 42, day: 3, word: "assure", pos: "v.", meaning: "보장하다, 확신시키다", example: "I assure you that the product is safe.", exMeaning: "제품이 안전하다는 것을 보장합니다." },
+    { id: 43, day: 3, word: "attach", pos: "v.", meaning: "첨부하다, 붙이다", example: "Please attach your resume to the email.", exMeaning: "이메일에 이력서를 첨부해 주세요." },
+    { id: 44, day: 3, word: "attain", pos: "v.", meaning: "달성하다, 도달하다", example: "He attained his target score in TOEFL.", exMeaning: "그는 토플에서 목표 점수를 달성했다." },
+    { id: 45, day: 3, word: "attitude", pos: "n.", meaning: "태도, 자세", example: "A positive attitude is crucial for success.", exMeaning: "긍정적인 태도는 성공에 필수적이다." },
 
-    <div id="matchGameSection" style="width:100%; display:none;">
-      <div style="text-align:center; margin-bottom:10px; font-weight:bold;">남은 짝: <span id="pairCount">6</span>쌍</div>
-      <div class="match-board" id="matchBoard"></div>
-      <button class="btn" onclick="initMatchGame()" style="width:100%; margin-top:15px; justify-content:center;">🎮 새 게임 시작</button>
-    </div>
-  </div>
+    // Day 4
+    { id: 46, day: 4, word: "attribute", pos: "v./n.", meaning: "~의 탓으로 돌리다, 속성", example: "He attributes his success to hard work.", exMeaning: "그는 자신의 성공을 열심히 일한 덕분으로 돌린다." },
+    { id: 47, day: 4, word: "author", pos: "n.", meaning: "저자, 작가", example: "The author wrote several best-selling novels.", exMeaning: "그 작가는 여러 권의 베스트셀러 소설을 썼다." },
+    { id: 48, day: 4, word: "authority", pos: "n.", meaning: "권한, 당국", example: "The local authority approved the project.", exMeaning: "지방 당국이 그 프로젝트를 승인했다." },
+    { id: 49, day: 4, word: "automate", pos: "v.", meaning: "자동화하다", example: "The system automates routine tasks.", exMeaning: "이 시스템은 반복적인 업무를 자동화한다." },
+    { id: 50, day: 4, word: "available", pos: "adj.", meaning: "이용 가능한, 시간이 있는", example: "Tickets are available online now.", exMeaning: "티켓은 지금 온라인에서 이용 가능합니다." },
+    { id: 51, day: 4, word: "aware", pos: "adj.", meaning: "알고 있는, 인식하는", example: "Be aware of the potential risks.", exMeaning: "잠재적 위험을 인식하고 계십시오." },
+    { id: 52, day: 4, word: "bar", pos: "n./v.", meaning: "막대기, 금지하다", example: "Press the space bar to continue.", exMeaning: "계속하려면 스페이스바를 누르세요." },
+    { id: 53, day: 4, word: "barrier", pos: "n.", meaning: "장벽, 장애물", example: "Language barriers can cause misunderstandings.", exMeaning: "언어 장벽은 오해를 불러일으킬 수 있다." },
+    { id: 54, day: 4, word: "benefit", pos: "n./v.", meaning: "혜택, 이익을 얻다", example: "Regular exercise has many health benefits.", exMeaning: "규칙적인 운동은 많은 건강상 혜택이 있다." },
+    { id: 55, day: 4, word: "bias", pos: "n.", meaning: "편견, 편향", example: "The report shows a clear political bias.", exMeaning: "그 보고서는 명백한 정치적 편향을 보여준다." },
+    { id: 56, day: 4, word: "bond", pos: "n./v.", meaning: "유대, 결합하다", example: "A strong bond formed between the teammates.", exMeaning: "팀원들 사이에 강한 유대감이 형성되었다." },
+    { id: 57, day: 4, word: "brief", pos: "adj.", meaning: "짧은, 간결한", example: "She gave a brief presentation.", exMeaning: "그녀는 간결한 발표를 했다." },
+    { id: 58, day: 4, word: "bulk", pos: "n.", meaning: "대부분, 대량", example: "Buying in bulk reduces the cost per unit.", exMeaning: "대량으로 구매하면 단가가 낮아진다." },
+    { id: 59, day: 4, word: "capable", pos: "adj.", meaning: "~할 능력이 있는", example: "She is capable of handling complex tasks.", exMeaning: "그녀는 복잡한 업무를 처리할 능력이 있다." },
+    { id: 60, day: 4, word: "capacity", pos: "n.", meaning: "용량, 수용 능력", example: "The stadium has a seating capacity of 50,000.", exMeaning: "그 경기장은 5만 명의 관중 수용 능력을 갖추고 있다." },
 
-  <div id="listView" class="view-section" style="display:none;">
-    <table class="list-table">
-      <thead>
-        <tr><th>한자</th><th>병음</th><th>뜻</th><th>듣기</th></tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
+    // Day 5
+    { id: 61, day: 5, word: "category", pos: "n.", meaning: "범주, 카테고리", example: "Books are classified into different categories.", exMeaning: "책은 다양한 범주로 분류된다." },
+    { id: 62, day: 5, word: "cease", pos: "v.", meaning: "중단되다, 그치다", example: "The rain finally ceased in the afternoon.", exMeaning: "오후에 드디어 비가 그쳤다." },
+    { id: 63, day: 5, word: "challenge", pos: "n./v.", meaning: "도전, 도전하다", example: "Solving this puzzle is a real challenge.", exMeaning: "이 퍼즐을 푸는 것은 진정한 도전이다." },
+    { id: 64, day: 5, word: "channel", pos: "n.", meaning: "채널, 경로", example: "News was broadcasted through official channels.", exMeaning: "뉴스는 공식 경로를 통해 방송되었다." },
+    { id: 65, day: 5, word: "chapter", pos: "n.", meaning: "장(章), 시기", example: "Read chapter three for tomorrow's class.", exMeaning: "내일 수업을 위해 3장을 읽어 오세요." },
+    { id: 66, day: 5, word: "chart", pos: "n.", meaning: "차트, 도표", example: "The chart displays monthly sales growth.", exMeaning: "차트는 월별 매출 성장을 보여준다." },
+    { id: 67, day: 5, word: "circumstance", pos: "n.", meaning: "상황, 정황", example: "Under no circumstances should you leave.", exMeaning: "어떠한 상황에서도 떠나서는 안 된다." },
+    { id: 68, day: 5, word: "cite", pos: "v.", meaning: "인용하다, 언급하다", example: "Please cite your sources in the bibliography.", exMeaning: "참고 문헌에 출처를 인용해 주세요." },
+    { id: 69, day: 5, word: "civil", pos: "adj.", meaning: "시민의, 민사의", example: "Every citizen has basic civil rights.", exMeaning: "모든 시민은 기본적인 시민권을 갖는다." },
+    { id: 70, day: 5, word: "clarify", pos: "v.", meaning: "명확하게 하다", example: "Could you clarify your point?", exMeaning: "당신의 주장을 명확히 해주시겠습니까?" },
+    { id: 71, day: 5, word: "classic", pos: "adj./n.", meaning: "고전적인, 전형적인", example: "This movie is a classic example of film noir.", exMeaning: "이 영화는 필름 느와르의 전형적인 예이다." },
+    { id: 72, day: 5, word: "clause", pos: "n.", meaning: "조항, 절", example: "Read the contract clause carefully.", exMeaning: "계약서 조항을 주의 깊게 읽으세요." },
+    { id: 73, day: 5, word: "code", pos: "n.", meaning: "암호, 규범, 코드", example: "Enter the security code to unlock.", exMeaning: "잠금을 해제하려면 보안 코드를 입력하세요." },
+    { id: 74, day: 5, word: "coherent", pos: "adj.", meaning: "일관성 있는, 논리적인", example: "Her essay was coherent and well-structured.", exMeaning: "그녀의 에세이는 일관성이 있고 구조가 잘 짜여 있었다." },
+    { id: 75, day: 5, word: "coincide", pos: "v.", meaning: "일치하다, 동시에 일어나다", example: "My vacation coincides with the holiday.", exMeaning: "내 휴가는 공휴일과 일치한다." },
 
-  <script>
-    const words = [
-      { hanzi: "大小", pinyin: "dàxiǎo", pos: "명사", meaning: "크기" },
-      { hanzi: "咖啡", pinyin: "kāfēi", pos: "명사", meaning: "커피" },
-      { hanzi: "蛋糕", pinyin: "dàngāo", pos: "명사", meaning: "케이크" },
-      { hanzi: "手机", pinyin: "shǒujī", pos: "명사", meaning: "휴대폰" },
-      { hanzi: "电脑", pinyin: "diànnǎo", pos: "명사", meaning: "컴퓨터" },
-      { hanzi: "衣服", pinyin: "yīfu", pos: "명사", meaning: "옷" },
-      { hanzi: "袜子", pinyin: "wàzi", pos: "명사", meaning: "양말" },
-      { hanzi: "漂亮", pinyin: "piàoliang", pos: "형용사", meaning: "예쁘다" },
-      { hanzi: "苹果", pinyin: "píngguǒ", pos: "명사", meaning: "사과" },
-      { hanzi: "水", pinyin: "shuǐ", pos: "명사", meaning: "물" },
-      { hanzi: "买", pinyin: "mǎi", pos: "동사", meaning: "사다" },
-      { hanzi: "卖", pinyin: "mài", pos: "동사", meaning: "팔다" }
-    ];
+    // Day 6
+    { id: 76, day: 6, word: "collapse", pos: "v./n.", meaning: "붕괴하다, 무너지다", example: "The old building collapsed during earthquake.", exMeaning: "오래된 건물이 지진 때 무너졌다." },
+    { id: 77, day: 6, word: "colleague", pos: "n.", meaning: "동료", example: "I discussed the project with my colleague.", exMeaning: "나는 동료와 그 프로젝트에 대해 논의했다." },
+    { id: 78, day: 6, word: "combine", pos: "v.", meaning: "결합하다, 섞다", example: "Combine all ingredients in a big bowl.", exMeaning: "큰 볼에 모든 재료를 섞으세요." },
+    { id: 79, day: 6, word: "commence", pos: "v.", meaning: "시작되다, 개시하다", example: "The ceremony will commence at 10 AM.", exMeaning: "의식은 오전 10시에 시작됩니다." },
+    { id: 80, day: 6, word: "comment", pos: "n./v.", meaning: "논평, 의견을 말하다", example: "He declined to comment on the rumor.", exMeaning: "그는 소문에 대해 언급하기를 거부했다." },
+    { id: 81, day: 6, word: "commit", pos: "v.", meaning: "저지르다, 헌신하다", example: "They committed to finishing the work on time.", exMeaning: "그들은 제시간에 일을 마치기로 약속했다." },
+    { id: 82, day: 6, word: "commodity", pos: "n.", meaning: "상품, 원자재", example: "Oil is a valuable global commodity.", exMeaning: "석유는 가치 있는 글로벌 원자재이다." },
+    { id: 83, day: 6, word: "communicate", pos: "v.", meaning: "소통하다, 전달하다", example: "Good leaders communicate clearly.", exMeaning: "훌륭한 리더는 명확하게 소통한다." },
+    { id: 84, day: 6, word: "community", pos: "n.", meaning: "공동체, 지역사회", example: "The local community held a fundraising event.", exMeaning: "지역 사회에서 기금 모금 행사를 열었다." },
+    { id: 85, day: 6, word: "compatible", pos: "adj.", meaning: "호환되는, 양립할 수 있는", example: "This software is compatible with Windows.", exMeaning: "이 소프트웨어는 윈도우와 호환된다." },
+    { id: 86, day: 6, word: "compensate", pos: "v.", meaning: "보상하다, 보충하다", example: "The company compensated him for the loss.", exMeaning: "회사는 그에게 손실을 보상해 주었다." },
+    { id: 87, day: 6, word: "compile", pos: "v.", meaning: "수집하다, 편집하다", example: "We compiled a list of recommended resources.", exMeaning: "우리는 추천 자료 목록을 수집했다." },
+    { id: 88, day: 6, word: "complement", pos: "v./n.", meaning: "보완하다, 보충물", example: "The red wine complements the steak nicely.", exMeaning: "레드 와인은 스테이크와 아주 잘 어울린다." },
+    { id: 89, day: 6, word: "complex", pos: "adj.", meaning: "복잡한", example: "The human brain is a complex system.", exMeaning: "인간의 뇌는 복잡한 시스템이다." },
+    { id: 90, day: 6, word: "comply", pos: "v.", meaning: "따르다, 준수하다", example: "All staff must comply with safety rules.", exMeaning: "모든 직원은 안전 수칙을 준수해야 한다." },
 
-    let currentIndex = 0, isFlipped = false;
-    let quizScoreCount = 0, quizTotalCount = 0, currentQuizWord = null, quizAnswered = false;
+    // Day 7
+    { id: 91, day: 7, word: "component", pos: "n.", meaning: "구성 요소, 부품", example: "Key components were tested thoroughly.", exMeaning: "핵심 부품들이 철저히 테스트되었다." },
+    { id: 92, day: 7, word: "compose", pos: "v.", meaning: "구성하다, 작곡하다", example: "Water is composed of hydrogen and oxygen.", exMeaning: "물은 수소와 산소로 구성되어 있다." },
+    { id: 93, day: 7, word: "comprehensive", pos: "adj.", meaning: "포괄적인, 종합적인", example: "We offer a comprehensive training program.", exMeaning: "우리는 종합적인 교육 프로그램을 제공한다." },
+    { id: 94, day: 7, word: "comprise", pos: "v.", meaning: "구성되다, 포함하다", example: "The team comprises five specialists.", exMeaning: "그 팀은 5명의 전문가로 구성되어 있다." },
+    { id: 95, day: 7, word: "conceive", pos: "v.", meaning: "구상하다, 상상하다", example: "It is hard to conceive of such a distance.", exMeaning: "그런 거리를 상상하기란 어렵다." },
+    { id: 96, day: 7, word: "concentrate", pos: "v.", meaning: "집중하다", example: "Silence helps me concentrate on my work.", exMeaning: "조용한 분위기는 작업에 집중하는 데 도움이 된다." },
+    { id: 97, day: 7, word: "concept", pos: "n.", meaning: "개념", example: "The concept is easy to understand.", exMeaning: "그 개념은 이해하기 쉽다." },
+    { id: 98, day: 7, word: "conclude", pos: "v.", meaning: "결론을 내리다, 마치다", example: "The meeting concluded with an agreement.", exMeaning: "회의는 합의와 함께 종료되었다." },
+    { id: 99, day: 7, word: "concurrent", pos: "adj.", meaning: "동시 발생의", example: "He served two concurrent sentences.", exMeaning: "그는 두 개의 동시 형기를 복역했다." },
+    { id: 100, day: 7, word: "conduct", pos: "v./n.", meaning: "수행하다, 지휘하다", example: "Researchers conducted an experiment.", exMeaning: "연구원들이 실험을 수행했다." },
+    { id: 101, day: 7, word: "confer", pos: "v.", meaning: "상의하다, 수여하다", example: "The board conferred a medal on him.", exMeaning: "이사회는 그에게 훈장을 수여했다." },
+    { id: 102, day: 7, word: "confine", pos: "v.", meaning: "제한하다, 가두다", example: "Please confine your remarks to the topic.", exMeaning: "발언은 주제에 한정해 주십시오." },
+    { id: 103, day: 7, word: "confirm", pos: "v.", meaning: "확인하다, 확정하다", example: "Please confirm your reservation by phone.", exMeaning: "전화로 예약을 확인해 주세요." },
+    { id: 104, day: 7, word: "conflict", pos: "n./v.", meaning: "갈등, 충돌하다", example: "Try to resolve conflicts peacefully.", exMeaning: "갈등을 평화롭게 해결하도록 노력하세요." },
+    { id: 105, day: 7, word: "conform", pos: "v.", meaning: "순응하다, 일치하다", example: "Products must conform to safety standards.", exMeaning: "제품은 안전 기준에 따라야 한다." },
 
-    // 성조 색상 포맷터
-    function formatPinyinWithTones(pinyinStr) {
-      if(!pinyinStr) return "";
-      return pinyinStr.split(/(\s+|\/|\(|\))/).map(s => {
-        if (/^\s+$/.test(s) || ['/', '(', ')'].includes(s)) return s;
-        let c = "t0";
-        if (/[āēīōūǖĀĒĪŌŪǕ]/.test(s)) c = "t1";
-        else if (/[áéíóúǘÁÉÍÓÚǗ]/.test(s)) c = "t2";
-        else if (/[ǎěǐǒǔǚǍĚǏǑǓǙ]/.test(s)) c = "t3";
-        else if (/[àèìòùǜÀÈÌÒÙǛ]/.test(s)) c = "t4";
-        return `<span class="${c}">${s}</span>`;
-      }).join('');
-    }
+    // Day 8
+    { id: 106, day: 8, word: "consent", pos: "n./v.", meaning: "동의, 동의하다", example: "He signed the form with full consent.", exMeaning: "그는 전적인 동의하에 서류에 서명했다." },
+    { id: 107, day: 8, word: "consequence", pos: "n.", meaning: "결과, 중요성", example: "Consider the consequences before acting.", exMeaning: "행동하기 전에 결과를 고려하세요." },
+    { id: 108, day: 8, word: "considerable", pos: "adj.", meaning: "상당한, 많은", example: "It took a considerable amount of time.", exMeaning: "상당한 시간이 걸렸다." },
+    { id: 109, day: 8, word: "consist", pos: "v.", meaning: "구성되다", example: "The meal consists of soup and salad.", exMeaning: "식사는 스프와 샐러드로 구성되어 있다." },
+    { id: 110, day: 8, word: "constant", pos: "adj.", meaning: "끊임없는, 지속적인", example: "The noise was a constant distraction.", exMeaning: "소음은 끊임없는 방해 요소였다." },
+    { id: 111, day: 8, word: "constitute", pos: "v.", meaning: "구성하다, 설립하다", example: "Twelve months constitute one year.", exMeaning: "12개월이 1년을 구성한다." },
+    { id: 112, day: 8, word: "constrain", pos: "v.", meaning: "제약하다, 강요하다", example: "Budget limits constrain our options.", exMeaning: "예산 한계가 우리의 선택을 제약한다." },
+    { id: 113, day: 8, word: "construct", pos: "v.", meaning: "건설하다, 구성하다", example: "They plan to construct a new bridge.", exMeaning: "그들은 새 다리를 건설할 계획이다." },
+    { id: 114, day: 8, word: "consult", pos: "v.", meaning: "상담하다, 자문을 구하다", example: "Consult a doctor if symptoms persist.", exMeaning: "증상이 지속되면 의사와 상담하세요." },
+    { id: 115, day: 8, word: "consume", pos: "v.", meaning: "소비하다, 섭취하다", example: "Cars consume a lot of fuel.", exMeaning: "자동차는 많은 연료를 소비한다." },
+    { id: 116, day: 8, word: "contact", pos: "n./v.", meaning: "접촉, 연락하다", example: "Feel free to contact us anytime.", exMeaning: "언제든지 부담 없이 연락주세요." },
+    { id: 117, day: 8, word: "contain", pos: "v.", meaning: "포함하다, 담고 있다", example: "This box contains fragile items.", exMeaning: "이 상자에는 깨지기 쉬운 물품이 들어있다." },
+    { id: 118, day: 8, word: "contemporary", pos: "adj.", meaning: "현대의, 동시대의", example: "She studies contemporary art history.", exMeaning: "그녀는 현대 미술사를 연구한다." },
+    { id: 119, day: 8, word: "context", pos: "n.", meaning: "문맥, 맥락", example: "Words must be understood in context.", exMeaning: "단어는 문맥 속에서 이해되어야 한다." },
+    { id: 120, day: 8, word: "contract", pos: "n./v.", meaning: "계약, 수축하다", example: "Sign the contract on the last line.", exMeaning: "마지막 줄에 계약서 서명을 하세요." }
+  ];
 
-    // TTS 발음 재생
-    function speakWord(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text.replace(/[\(\)~·]/g, ''));
-        u.lang = 'zh-CN'; u.rate = 0.85;
-        window.speechSynthesis.speak(u);
-      }
-    }
-    function speakCurrentWord() { speakWord(words[currentIndex].hanzi); }
+  // App State
+  let memorizedIds = JSON.parse(localStorage.getItem('memorizedWords')) || [];
+  let currentDay = 'all';
+  let currentFilter = 'all';
+  let searchQuery = '';
 
-    // 플래시카드 로직
-    function renderCard() {
-      document.getElementById("card").classList.remove("flipped");
-      isFlipped = false;
-      setTimeout(() => {
-        const item = words[currentIndex];
-        document.getElementById("frontHanzi").textContent = item.hanzi;
-        document.getElementById("backPinyin").innerHTML = formatPinyinWithTones(item.pinyin);
-        document.getElementById("backMeaning").textContent = item.meaning;
-        document.getElementById("backPos").textContent = item.pos;
-        document.getElementById("progressText").textContent = `${currentIndex + 1} / ${words.length}`;
-      }, 150);
-    }
-    function flipCard() { isFlipped = !isFlipped; document.getElementById("card").classList.toggle("flipped", isFlipped); if(isFlipped) speakCurrentWord(); }
-    function nextCard() { if (currentIndex < words.length - 1) { currentIndex++; renderCard(); } }
-    function prevCard() { if (currentIndex > 0) { currentIndex--; renderCard(); } }
-    function shuffleCards() { words.sort(() => Math.random() - 0.5); currentIndex = 0; renderCard(); renderTable(); }
+  // DOM Elements
+  const wordGrid = document.getElementById('wordGrid');
+  const progressBar = document.getElementById('progressBar');
+  const totalCountEl = document.getElementById('totalCount');
+  const progressPercentEl = document.getElementById('progressPercent');
 
-    // 퀴즈 로직
-    function nextQuiz() {
-      quizAnswered = false;
-      currentQuizWord = words[Math.floor(Math.random() * words.length)];
-      document.getElementById("quizHanzi").textContent = currentQuizWord.hanzi;
-      let opts = [currentQuizWord];
-      while (opts.length < 4) {
-        let r = words[Math.floor(Math.random() * words.length)];
-        if (!opts.includes(r)) opts.push(r);
-      }
-      opts.sort(() => Math.random() - 0.5);
-      const container = document.getElementById("quizOptions");
-      container.innerHTML = "";
-      opts.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.className = "quiz-opt-btn";
-        btn.innerHTML = `${formatPinyinWithTones(opt.pinyin)} &nbsp;|&nbsp; <strong>${opt.meaning}</strong>`;
-        btn.onclick = () => {
-          if (quizAnswered) return;
-          quizAnswered = true; quizTotalCount++;
-          if (opt.hanzi === currentQuizWord.hanzi) {
-            btn.classList.add("correct"); quizScoreCount++; speakWord(currentQuizWord.hanzi);
-          } else {
-            btn.classList.add("wrong");
-          }
-          document.getElementById("quizScore").textContent = `점수: ${quizScoreCount} / ${quizTotalCount}`;
-        };
-        container.appendChild(btn);
-      });
-    }
-
-    // --- 🎮 단어 산성비 게임 엔진 ---
-    let rainLoop = null, spawnLoop = null;
-    let activeRainWords = [], rainScore = 0, rainLives = 3;
-
-    function startRainGame() {
-      clearInterval(rainLoop); clearInterval(spawnLoop);
-      const area = document.getElementById("rainArea");
-      area.innerHTML = "";
-      activeRainWords = [];
-      rainScore = 0; rainLives = 3;
-      document.getElementById("rainScore").textContent = rainScore;
-      document.getElementById("rainLives").textContent = "❤️".repeat(rainLives);
-      document.getElementById("rainInput").value = "";
-      document.getElementById("rainInput").focus();
-
-      // 단어 떨어지는 루프
-      rainLoop = setInterval(() => {
-        activeRainWords.forEach((item, index) => {
-          item.top += 2;
-          item.el.style.top = item.top + "px";
-
-          // 바닥 단착 시 목숨 차감
-          if (item.top >= 280) {
-            area.removeChild(item.el);
-            activeRainWords.splice(index, 1);
-            rainLives--;
-            document.getElementById("rainLives").textContent = "❤️".repeat(Math.max(0, rainLives));
-            if (rainLives <= 0) {
-              clearInterval(rainLoop); clearInterval(spawnLoop);
-              alert(`게임 오버! 최종 점수: ${rainScore}점`);
-            }
-          }
-        });
-      }, 50);
-
-      // 2초마다 새 단어 스폰
-      spawnLoop = setInterval(() => {
-        const randomWord = words[Math.floor(Math.random() * words.length)];
-        const el = document.createElement("div");
-        el.className = "falling-word";
-        el.textContent = randomWord.hanzi;
-        
-        const leftPos = Math.random() * (area.clientWidth - 80);
-        el.style.left = leftPos + "px";
-        el.style.top = "0px";
-        area.appendChild(el);
-
-        activeRainWords.push({ el, word: randomWord, top: 0 });
-      }, 2000);
-    }
-
-    function checkRainInput(e) {
-      if (e.key === 'Enter') {
-        const val = e.target.value.trim().toLowerCase();
-        let hitIndex = -1;
-
-        activeRainWords.forEach((item, idx) => {
-          // 뜻이나 병음(성조 기호 제외 혹은 포함)이 일치할 경우
-          const cleanPinyin = item.word.pinyin.toLowerCase().replace(/[^a-z]/g, '');
-          if (val === item.word.meaning || val === cleanPinyin || val === item.word.pinyin.toLowerCase()) {
-            hitIndex = idx;
-          }
-        });
-
-        if (hitIndex !== -1) {
-          const hit = activeRainWords[hitIndex];
-          speakWord(hit.word.hanzi);
-          hit.el.style.background = "#10b981";
-          hit.el.textContent = "💥 " + hit.word.meaning;
-          setTimeout(() => { if(hit.el.parentNode) hit.el.parentNode.removeChild(hit.el); }, 200);
-          
-          activeRainWords.splice(hitIndex, 1);
-          rainScore += 10;
-          document.getElementById("rainScore").textContent = rainScore;
-          if(rainScore % 50 === 0) confetti({ particleCount: 50, spread: 60 });
-        }
-        e.target.value = "";
-      }
-    }
-
-    // --- 🧩 짝맞추기 게임 엔진 ---
-    let matchSelected = [], matchedPairs = 0;
-    function initMatchGame() {
-      matchedPairs = 0; matchSelected = [];
-      document.getElementById("pairCount").textContent = 6;
-      const board = document.getElementById("matchBoard");
-      board.innerHTML = "";
-      
-      const subWords = [...words].sort(() => Math.random() - 0.5).slice(0, 6);
-      let deck = [];
-      subWords.forEach((w, i) => {
-        deck.push({ id: i, text: w.hanzi }, { id: i, text: w.meaning });
-      });
-      deck.sort(() => Math.random() - 0.5);
-
-      deck.forEach(data => {
-        const card = document.createElement("div");
-        card.className = "match-card";
-        card.textContent = data.text;
-        card.dataset.id = data.id;
-        card.onclick = () => {
-          if (card.classList.contains("matched") || card.classList.contains("selected") || matchSelected.length >= 2) return;
-          card.classList.add("selected");
-          matchSelected.push(card);
-
-          if (matchSelected.length === 2) {
-            const [c1, c2] = matchSelected;
-            if (c1.dataset.id === c2.dataset.id) {
-              setTimeout(() => {
-                c1.classList.add("matched"); c2.classList.add("matched");
-                matchSelected = []; matchedPairs++;
-                document.getElementById("pairCount").textContent = 6 - matchedPairs;
-                if (matchedPairs === 6) confetti({ particleCount: 100, spread: 70 });
-              }, 300);
-            } else {
-              setTimeout(() => { c1.classList.remove("selected"); c2.classList.remove("selected"); matchSelected = []; }, 600);
-            }
-          }
-        };
-        board.appendChild(card);
-      });
-    }
-
-    // 탭 및 서브탭 스위칭
-    function switchTab(t) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('cardView').style.display = 'none';
-      document.getElementById('quizView').style.display = 'none';
-      document.getElementById('gameView').style.display = 'none';
-      document.getElementById('listView').style.display = 'none';
-
-      clearInterval(rainLoop); clearInterval(spawnLoop); // 다른 탭 이동 시 게임 정지
-
-      if (t === 'card') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('cardView').style.display = 'flex';
-      } else if (t === 'quiz') {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('quizView').style.display = 'flex';
-        nextQuiz();
-      } else if (t === 'game') {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        document.getElementById('gameView').style.display = 'flex';
-        switchSubGame('rain');
-      } else {
-        document.querySelectorAll('.tab-btn')[3].classList.add('active');
-        document.getElementById('listView').style.display = 'block';
-      }
-    }
-
-    function switchSubGame(sub) {
-      document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('rainGameSection').style.display = 'none';
-      document.getElementById('matchGameSection').style.display = 'none';
-      clearInterval(rainLoop); clearInterval(spawnLoop);
-
-      if (sub === 'rain') {
-        document.querySelectorAll('.sub-tab-btn')[0].classList.add('active');
-        document.getElementById('rainGameSection').style.display = 'block';
-        startRainGame();
-      } else {
-        document.querySelectorAll('.sub-tab-btn')[1].classList.add('active');
-        document.getElementById('matchGameSection').style.display = 'block';
-        initMatchGame();
-      }
-    }
-
-    function renderTable() {
-      document.getElementById("tableBody").innerHTML = words.map(w => `
-        <tr>
-          <td><strong>${w.hanzi}</strong></td>
-          <td>${formatPinyinWithTones(w.pinyin)}</td>
-          <td>${w.meaning}</td>
-          <td><button class="btn btn-audio" style="padding:4px 8px; font-size:0.75rem;" onclick="speakWord('${w.hanzi}')">🔊</button></td>
-        </tr>`).join("");
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && document.getElementById('cardView').style.display !== 'none') {
-        e.preventDefault();
-        if (!isFlipped) flipCard(); else nextCard();
-      }
+  // Filter & Render
+  function render() {
+    let filtered = words.filter(w => {
+      const matchDay = (currentDay === 'all') || (w.day.toString() === currentDay);
+      const isMem = memorizedIds.includes(w.id);
+      const matchFilter = (currentFilter === 'all') ||
+                          (currentFilter === 'memorized' && isMem) ||
+                          (currentFilter === 'unmemorized' && !isMem);
+      const matchSearch = w.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          w.meaning.includes(searchQuery);
+      return matchDay && matchFilter && matchSearch;
     });
 
-    renderCard();
-    renderTable();
-  </script>
+    wordGrid.innerHTML = '';
+    filtered.forEach(w => {
+      const isMem = memorizedIds.includes(w.id);
+      const card = document.createElement('div');
+      card.className = `word-card ${isMem ? 'memorized' : ''}`;
+      card.innerHTML = `
+        <div>
+          <div class="card-top">
+            <div>
+              <span class="word-title">${w.word}</span>
+              <span class="pos">${w.pos}</span>
+            </div>
+            <button class="audio-btn" onclick="speak('${w.word}')" title="발음 듣기">🔊</button>
+          </div>
+          <div class="meaning">${w.meaning}</div>
+          <div class="example-box">
+            <div class="ex-en">${w.example}</div>
+            <div class="ex-kr">${w.exMeaning}</div>
+          </div>
+        </div>
+        <div class="card-bottom">
+          <span class="day-badge">Day ${w.day}</span>
+          <button class="check-btn ${isMem ? 'checked' : ''}" onclick="toggleMemorize(${w.id})">
+            ${isMem ? '✓ 암기완료' : '미암기'}
+          </button>
+        </div>
+      `;
+      wordGrid.appendChild(card);
+    });
+
+    updateStats();
+  }
+
+  function updateStats() {
+    const total = words.length;
+    const memCount = memorizedIds.length;
+    const percent = Math.round((memCount / total) * 100) || 0;
+
+    totalCountEl.innerText = total;
+    progressPercentEl.innerText = `${percent}%`;
+    progressBar.style.width = `${percent}%`;
+  }
+
+  function toggleMemorize(id) {
+    if (memorizedIds.includes(id)) {
+      memorizedIds = memorizedIds.filter(item => item !== id);
+    } else {
+      memorizedIds.push(id);
+    }
+    localStorage.setItem('memorizedWords', JSON.stringify(memorizedIds));
+    render();
+  }
+
+  function speak(text) {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      window.speechSynthesis.speak(utterance);
+    }
+  }
+
+  // Event Listeners
+  document.getElementById('dayTabs').addEventListener('click', (e) => {
+    if (e.target.classList.contains('day-tab')) {
+      document.querySelectorAll('.day-tab').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      currentDay = e.target.dataset.day;
+      render();
+    }
+  });
+
+  document.getElementById('subTabs').addEventListener('click', (e) => {
+    if (e.target.classList.contains('sub-tab')) {
+      document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      currentFilter = e.target.dataset.filter;
+      render();
+    }
+  });
+
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    searchQuery = e.target.value;
+    render();
+  });
+
+  // Quiz Logic
+  function startQuiz() {
+    const targetWords = currentDay === 'all' ? words : words.filter(w => w.day.toString() === currentDay);
+    if(targetWords.length < 4) {
+      alert("테스트를 진행하려면 최소 4개 이상의 단어가 필요합니다.");
+      return;
+    }
+
+    const randomWord = targetWords[Math.floor(Math.random() * targetWords.length)];
+    document.getElementById('quizWord').innerText = randomWord.word;
+
+    // Generate options
+    let options = [randomWord.meaning];
+    while(options.length < 4) {
+      const randOption = words[Math.floor(Math.random() * words.length)].meaning;
+      if(!options.includes(randOption)) {
+        options.push(randOption);
+      }
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    const optsContainer = document.getElementById('quizOptions');
+    optsContainer.innerHTML = '';
+    options.forEach(opt => {
+      const btn = document.createElement('div');
+      btn.className = 'quiz-opt';
+      btn.innerText = opt;
+      btn.onclick = () => {
+        if(opt === randomWord.meaning) {
+          alert('정답입니다! 🎉');
+        } else {
+          alert(`오답입니다! 정답은: ${randomWord.meaning}`);
+        }
+        startQuiz(); // next
+      };
+      optsContainer.appendChild(btn);
+    });
+
+    document.getElementById('quizModal').classList.add('active');
+  }
+
+  function closeQuiz() {
+    document.getElementById('quizModal').classList.remove('active');
+  }
+
+  // Initial Render
+  render();
+</script>
 </body>
 </html>
