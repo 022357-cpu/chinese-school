@@ -118,7 +118,7 @@
 
     /* 짝맞추기 게임 */
     .match-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
-    .match-card { height: 80px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; cursor: pointer; }
+    .match-card { height: 80px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 1.1rem; cursor: pointer; text-align: center; padding: 4px; }
     .match-card.selected { border-color: #4f46e5; background-color: #e0e7ff; }
     .match-card.matched { visibility: hidden; opacity: 0; }
 
@@ -126,7 +126,6 @@
     .list-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; font-size: 0.95rem; }
     .list-table th, .list-table td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
     
-    /* 화면 너비 좁아질 때 목록 폰트 조정 */
     @media (max-width: 480px) {
       .list-table th, .list-table td { padding: 6px; font-size: 0.85rem; }
     }
@@ -155,14 +154,14 @@
     <div class="card-container" onclick="flipCard()">
       <div class="card" id="card">
         <div class="card-face card-front">
-          <div class="hanzi" id="frontHanzi">大小</div>
+          <div class="hanzi" id="frontHanzi">双</div>
           <button class="btn btn-audio" onclick="event.stopPropagation(); speakCurrentWord();">🔊 발음 듣기</button>
           <div style="font-size:0.8rem; color:#9ca3af; margin-top:15px;">⌨️ Enter: 뒤집기 / 다음 단어</div>
         </div>
         <div class="card-face card-back">
-          <div class="pinyin" id="backPinyin">dàxiǎo</div>
-          <div class="meaning" id="backMeaning">크기</div>
-          <div class="pos" id="backPos">명사</div>
+          <div class="pinyin" id="backPinyin">shuāng</div>
+          <div class="meaning" id="backMeaning">쌍, 켤레</div>
+          <div class="pos" id="backPos">양사</div>
         </div>
       </div>
     </div>
@@ -171,13 +170,13 @@
       <button class="btn" onclick="nextCard()">다음</button>
       <button class="btn btn-secondary" onclick="shuffleCards()">🎲 섞기</button>
     </div>
-    <div style="margin-top:10px; font-size:0.9rem; color:#6b7280;" id="progressText">1 / 116</div>
+    <div style="margin-top:10px; font-size:0.9rem; color:#6b7280;" id="progressText">1 / 123</div>
   </div>
 
   <div id="quizView" class="view-section" style="display:none;">
     <div class="quiz-container">
       <div style="text-align:center; margin-bottom:15px;">
-        <div class="hanzi" id="quizHanzi">大小</div>
+        <div class="hanzi" id="quizHanzi">双</div>
         <button class="btn btn-audio" onclick="speakWord(currentQuizWord.hanzi)" style="padding:4px 10px; font-size:0.8rem;">🔊 발음</button>
       </div>
       <div class="quiz-options" id="quizOptions"></div>
@@ -198,7 +197,7 @@
         <span>목숨: <span id="rainLives">❤️❤️❤️</span></span>
       </div>
       <div class="rain-game-area" id="rainArea"></div>
-      <input type="text" id="rainInput" class="rain-input" placeholder="뜻이나 병음을 입력 후 Enter!" onkeydown="checkRainInput(event)">
+      <input type="text" id="rainInput" class="rain-input" placeholder="뜻 또는 성조 없는 알파벳 병음(예: shuang) 입력!" onkeydown="checkRainInput(event)">
       <button class="btn" onclick="startRainGame()" style="width:100%; margin-top:10px; justify-content:center;">🎮 게임 시작 / 리셋</button>
     </div>
 
@@ -219,156 +218,165 @@
   </div>
 
   <script>
-    // 추출된 전체 116개 단어 목록
     const words = [
-        { "hanzi": "大小", "pinyin": "dàxiǎo", "pos": "명사", "meaning": "크기" },
-        { "hanzi": "那个", "pinyin": "nàge", "pos": "대명사", "meaning": "저것" },
-        { "hanzi": "点", "pinyin": "diǎn", "pos": "양사", "meaning": "시, 조금" },
-        { "hanzi": "贵", "pinyin": "guì", "pos": "형용사", "meaning": "비싸다" },
-        { "hanzi": "便宜", "pinyin": "piányi", "pos": "형용사", "meaning": "싸다" },
-        { "hanzi": "(一)点儿", "pinyin": "(yì)diǎnr", "pos": "양사", "meaning": "조금" },
-        { "hanzi": "卖", "pinyin": "mài", "pos": "동사", "meaning": "팔다" },
-        { "hanzi": "买", "pinyin": "mǎi", "pos": "동사", "meaning": "사다" },
-        { "hanzi": "斤", "pinyin": "jīn", "pos": "양사", "meaning": "근(무게 단위)" },
-        { "hanzi": "太~了", "pinyin": "tài~le", "pos": "부사", "meaning": "너무 ~하다" },
-        { "hanzi": "等", "pinyin": "děng", "pos": "동사", "meaning": "기다리다" },
-        { "hanzi": "想", "pinyin": "xiǎng", "pos": "조동사", "meaning": "~하고 싶다" },
-        { "hanzi": "书包", "pinyin": "shūbāo", "pos": "명사", "meaning": "책가방" },
-        { "hanzi": "要", "pinyin": "yào", "pos": "동사", "meaning": "원하다" },
-        { "hanzi": "元", "pinyin": "yuán", "pos": "양사", "meaning": "위안(화폐)" },
-        { "hanzi": "块", "pinyin": "kuài", "pos": "양사", "meaning": "덩어리, 위안" },
-        { "hanzi": "角", "pinyin": "jiǎo", "pos": "양사", "meaning": "자오(화폐)" },
-        { "hanzi": "毛", "pinyin": "máo", "pos": "양사", "meaning": "마오(화폐)" },
-        { "hanzi": "分", "pinyin": "fēn", "pos": "양사", "meaning": "펀(화폐)" },
-        { "hanzi": "来", "pinyin": "lái", "pos": "동사", "meaning": "오다" },
-        { "hanzi": "咖啡", "pinyin": "kāfēi", "pos": "명사", "meaning": "커피" },
-        { "hanzi": "奶茶", "pinyin": "nǎichá", "pos": "명사", "meaning": "밀크티" },
-        { "hanzi": "再", "pinyin": "zài", "pos": "부사", "meaning": "다시" },
-        { "hanzi": "又", "pinyin": "yòu", "pos": "부사", "meaning": "또" },
-        { "hanzi": "加", "pinyin": "jiā", "pos": "동사", "meaning": "더하다" },
-        { "hanzi": "明天", "pinyin": "míngtiān", "pos": "명사", "meaning": "내일" },
-        { "hanzi": "昨天", "pinyin": "zuótiān", "pos": "명사", "meaning": "어제" },
-        { "hanzi": "巧克力", "pinyin": "qiǎokèlì", "pos": "명사", "meaning": "초콜릿" },
-        { "hanzi": "蛋糕", "pinyin": "dàngāo", "pos": "명사", "meaning": "케이크" },
-        { "hanzi": "一共", "pinyin": "yígòng", "pos": "부사", "meaning": "모두, 전부" },
-        { "hanzi": "都", "pinyin": "dōu", "pos": "부사", "meaning": "모두, 다" },
-        { "hanzi": "请", "pinyin": "qǐng", "pos": "동사", "meaning": "청하다" },
-        { "hanzi": "扫", "pinyin": "sǎo", "pos": "동사", "meaning": "스캔하다" },
-        { "hanzi": "二维码", "pinyin": "èrwéimǎ", "pos": "명사", "meaning": "QR코드" },
-        { "hanzi": "支付", "pinyin": "zhīfù", "pos": "동사", "meaning": "지불하다" },
-        { "hanzi": "和", "pinyin": "hé", "pos": "접속사", "meaning": "~와/과" },
-        { "hanzi": "本", "pinyin": "běn", "pos": "양사", "meaning": "권(책)" },
-        { "hanzi": "词典", "pinyin": "cídiǎn", "pos": "명사", "meaning": "사전" },
-        { "hanzi": "狗", "pinyin": "gǒu", "pos": "명사", "meaning": "개" },
-        { "hanzi": "件", "pinyin": "jiàn", "pos": "양사", "meaning": "벌, 건" },
-        { "hanzi": "衣服", "pinyin": "yīfu", "pos": "명사", "meaning": "옷" },
-        { "hanzi": "瓶", "pinyin": "píng", "pos": "양사", "meaning": "병" },
-        { "hanzi": "水", "pinyin": "shuǐ", "pos": "명사", "meaning": "물" },
-        { "hanzi": "书", "pinyin": "shū", "pos": "명사", "meaning": "책" },
-        { "hanzi": "条", "pinyin": "tiáo", "pos": "양사", "meaning": "가닥, 벌" },
-        { "hanzi": "裤子", "pinyin": "kùzi", "pos": "명사", "meaning": "바지" },
-        { "hanzi": "裙子", "pinyin": "qúnzi", "pos": "명사", "meaning": "치마" },
-        { "hanzi": "袜子", "pinyin": "wàzi", "pos": "명사", "meaning": "양말" },
-        { "hanzi": "绿茶", "pinyin": "lǜchá", "pos": "명사", "meaning": "녹차" },
-        { "hanzi": "百", "pinyin": "bǎi", "pos": "수사", "meaning": "백" },
-        { "hanzi": "千", "pinyin": "qiān", "pos": "수사", "meaning": "천" },
-        { "hanzi": "万", "pinyin": "wàn", "pos": "수사", "meaning": "만" },
-        { "hanzi": "零", "pinyin": "líng", "pos": "수사", "meaning": "영(0)" },
-        { "hanzi": "顶", "pinyin": "dǐng", "pos": "양사", "meaning": "개(모자)" },
-        { "hanzi": "帽子", "pinyin": "màozi", "pos": "명사", "meaning": "모자" },
-        { "hanzi": "不错", "pinyin": "búcuò", "pos": "형용사", "meaning": "괜찮다, 좋다" },
-        { "hanzi": "当然", "pinyin": "dāngrán", "pos": "부사", "meaning": "당연히" },
-        { "hanzi": "说", "pinyin": "shuō", "pos": "동사", "meaning": "말하다" },
-        { "hanzi": "稍", "pinyin": "shāo", "pos": "부사", "meaning": "조금, 약간" },
-        { "hanzi": "原价", "pinyin": "yuánjià", "pos": "명사", "meaning": "원가" },
-        { "hanzi": "现价", "pinyin": "xiànjià", "pos": "명사", "meaning": "현재가" },
-        { "hanzi": "北京烤鸭", "pinyin": "Běijīng kǎoyā", "pos": "명사", "meaning": "베이징카오야" },
-        { "hanzi": "网络游戏", "pinyin": "wǎnglù yóuxì", "pos": "명사", "meaning": "온라인 게임" },
-        { "hanzi": "绿色", "pinyin": "lǜsè", "pos": "명사", "meaning": "녹색" },
-        { "hanzi": "种", "pinyin": "zhǒng", "pos": "양사", "meaning": "종류" },
-        { "hanzi": "比较", "pinyin": "bǐjiào", "pos": "부사", "meaning": "비교적" },
-        { "hanzi": "台", "pinyin": "tái", "pos": "양사", "meaning": "대(기계)" },
-        { "hanzi": "电脑", "pinyin": "diànnǎo", "pos": "명사", "meaning": "컴퓨터" },
-        { "hanzi": "速度", "pinyin": "sùdù", "pos": "명사", "meaning": "속도" },
-        { "hanzi": "快", "pinyin": "kuài", "pos": "형용사", "meaning": "빠르다" },
-        { "hanzi": "慢", "pinyin": "màn", "pos": "형용사", "meaning": "느리다" },
-        { "hanzi": "好看", "pinyin": "hǎokàn", "pos": "형용사", "meaning": "보기 좋다" },
-        { "hanzi": "短", "pinyin": "duǎn", "pos": "형용사", "meaning": "짧다" },
-        { "hanzi": "长", "pinyin": "cháng", "pos": "형용사", "meaning": "길다" },
-        { "hanzi": "热", "pinyin": "rè", "pos": "형용사", "meaning": "덥다" },
-        { "hanzi": "冷", "pinyin": "lěng", "pos": "형용사", "meaning": "춥다" },
-        { "hanzi": "高", "pinyin": "gāo", "pos": "형용사", "meaning": "높다" },
-        { "hanzi": "矮", "pinyin": "ǎi", "pos": "형용사", "meaning": "작다, 낮다" },
-        { "hanzi": "离", "pinyin": "lí", "pos": "개사", "meaning": "~에서부터" },
-        { "hanzi": "北京大学", "pinyin": "Běijīng Dàxué", "pos": "명사", "meaning": "북경대학교" },
-        { "hanzi": "近", "pinyin": "jìn", "pos": "형용사", "meaning": "가깝다" },
-        { "hanzi": "远", "pinyin": "yuǎn", "pos": "형용사", "meaning": "멀다" },
-        { "hanzi": "地方", "pinyin": "dìfang", "pos": "명사", "meaning": "장소, 곳" },
-        { "hanzi": "运动鞋", "pinyin": "yùndòngxié", "pos": "명사", "meaning": "운동화" },
-        { "hanzi": "支", "pinyin": "zhī", "pos": "양사", "meaning": "자루(펜)" },
-        { "hanzi": "笔", "pinyin": "bǐ", "pos": "명사", "meaning": "펜" },
-        { "hanzi": "真", "pinyin": "zhēn", "pos": "부사", "meaning": "정말, 진짜" },
-        { "hanzi": "学生证", "pinyin": "xuéshengzèng", "pos": "명사", "meaning": "학생증" },
-        { "hanzi": "拿", "pinyin": "ná", "pos": "동사", "meaning": "들다, 가지다" },
-        { "hanzi": "就", "pinyin": "jiù", "pos": "부사", "meaning": "바로, 곧" },
-        { "hanzi": "双", "pinyin": "shuāng", "pos": "양사", "meaning": "켤레" },
-        { "hanzi": "鞋", "pinyin": "xié", "pos": "명사", "meaning": "신발" },
-        { "hanzi": "试", "pinyin": "shì", "pos": "동사", "meaning": "입어보다, 시험하다" },
-        { "hanzi": "可以", "pinyin": "kěyǐ", "pos": "조동사", "meaning": "~할 수 있다" },
-        { "hanzi": "一下", "pinyin": "yíxià", "pos": "수량사", "meaning": "한 번 ~해 보다" },
-        { "hanzi": "正好", "pinyin": "zhènghǎo", "pos": "부사", "meaning": "마침, 딱 좋다" },
-        { "hanzi": "跟", "pinyin": "gēn", "pos": "개사", "meaning": "~와/과" },
-        { "hanzi": "网上", "pinyin": "wǎngshang", "pos": "명사", "meaning": "인터넷 상" },
-        { "hanzi": "到", "pinyin": "dào", "pos": "동사", "meaning": "도착하다, ~까지" },
-        { "hanzi": "看", "pinyin": "kàn", "pos": "동사", "meaning": "보다" },
-        { "hanzi": "老师", "pinyin": "lǎoshī", "pos": "명사", "meaning": "선생님" },
-        { "hanzi": "听", "pinyin": "tīng", "pos": "동사", "meaning": "듣다" },
-        { "hanzi": "话", "pinyin": "huà", "pos": "명사", "meaning": "말" },
-        { "hanzi": "找", "pinyin": "zhǎo", "pos": "동사", "meaning": "찾다" },
-        { "hanzi": "手机", "pinyin": "shǒujī", "pos": "명사", "meaning": "휴대폰" },
-        { "hanzi": "的", "pinyin": "de", "pos": "조사", "meaning": "~의, ~하는" },
-        { "hanzi": "一样", "pinyin": "yíyàng", "pos": "형용사", "meaning": "같다" },
-        { "hanzi": "多少", "pinyin": "duōshao", "pos": "대명사", "meaning": "얼마, 몇" },
-        { "hanzi": "钱", "pinyin": "qián", "pos": "명사", "meaning": "돈" },
-        { "hanzi": "打折", "pinyin": "dǎzhé", "pos": "동사", "meaning": "할인하다" },
-        { "hanzi": "问", "pinyin": "wèn", "pos": "동사", "meaning": "묻다" },
-        { "hanzi": "只", "pinyin": "zhī", "pos": "양사", "meaning": "마리" },
-        { "hanzi": "筷子", "pinyin": "kuàizi", "pos": "명사", "meaning": "젓가락" },
-        { "hanzi": "手", "pinyin": "shǒu", "pos": "명사", "meaning": "손" },
-        { "hanzi": "只要", "pinyin": "zhǐyào", "pos": "접속사", "meaning": "단지 ~하기만 하면" },
-        { "hanzi": "怎么", "pinyin": "zěnme", "pos": "대명사", "meaning": "어떻게" },
-        { "hanzi": "漂亮", "pinyin": "piàoliang", "pos": "형용사", "meaning": "예쁘다" },
-        { "hanzi": "才", "pinyin": "cái", "pos": "부사", "meaning": "비로소, 겨우" },
-        { "hanzi": "写", "pinyin": "xiě", "pos": "동사", "meaning": "쓰다" },
-        { "hanzi": "呀", "pinyin": "ya", "pos": "조사", "meaning": "아, 야(감탄사)" },
-        { "hanzi": "在", "pinyin": "zài", "pos": "전치사", "meaning": "~에, ~에서" },
-        { "hanzi": "正在", "pinyin": "zhèngzài", "pos": "부사", "meaning": "마침 ~하고 있다" },
-        { "hanzi": "呢", "pinyin": "ne", "pos": "조사", "meaning": "~는요?" },
-        { "hanzi": "最近", "pinyin": "zuìjìn", "pos": "명사", "meaning": "최근" },
-        { "hanzi": "好", "pinyin": "hǎo", "pos": "형용사", "meaning": "좋다" },
-        { "hanzi": "能", "pinyin": "néng", "pos": "조동사", "meaning": "~할 수 있다" },
-        { "hanzi": "跑", "pinyin": "pǎo", "pos": "동사", "meaning": "뛰다, 달리다" },
-        { "hanzi": "进", "pinyin": "jìn", "pos": "동사", "meaning": "들어가다" },
-        { "hanzi": "新款", "pinyin": "xīnkuǎn", "pos": "명사", "meaning": "신상품" },
-        { "hanzi": "已经", "pinyin": "yǐjīng", "pos": "부사", "meaning": "이미, 벌써" },
-        { "hanzi": "最", "pinyin": "zuì", "pos": "부사", "meaning": "가장, 제일" },
-        { "hanzi": "低", "pinyin": "dī", "pos": "형용사", "meaning": "낮다" },
-        { "hanzi": "价格", "pinyin": "jiàgé", "pos": "명사", "meaning": "가격" },
-        { "hanzi": "出示", "pinyin": "chūshì", "pos": "동사", "meaning": "제시하다" },
-        { "hanzi": "给", "pinyin": "gěi", "pos": "동사", "meaning": "주다, ~에게" },
-        { "hanzi": "外边", "pinyin": "wàibian", "pos": "명사", "meaning": "밖" },
-        { "hanzi": "雪", "pinyin": "xuě", "pos": "명사", "meaning": "눈" },
-        { "hanzi": "音乐", "pinyin": "yīnyuè", "pos": "명사", "meaning": "음악" },
-        { "hanzi": "复习", "pinyin": "fùxí", "pos": "동사", "meaning": "복습하다" },
-        { "hanzi": "日记", "pinyin": "rìjì", "pos": "명사", "meaning": "일기" },
-        { "hanzi": "上午", "pinyin": "shàngwǔ", "pos": "명사", "meaning": "오전" },
-        { "hanzi": "下午", "pinyin": "xiàwǔ", "pos": "명사", "meaning": "오후" }
+      { "hanzi": "双", "pinyin": "shuāng", "pos": "양사", "meaning": "쌍, 켤레" },
+      { "hanzi": "鞋", "pinyin": "xié", "pos": "명사", "meaning": "신발" },
+      { "hanzi": "试", "pinyin": "shì", "pos": "동사", "meaning": "~해 보다" },
+      { "hanzi": "可以", "pinyin": "kěyǐ", "pos": "조동사", "meaning": "~해도 좋다" },
+      { "hanzi": "一下", "pinyin": "yíxià", "pos": "수량사", "meaning": "좀 ~하다" },
+      { "hanzi": "正好", "pinyin": "zhènghǎo", "pos": "형용사", "meaning": "딱 좋다" },
+      { "hanzi": "跟", "pinyin": "gēn", "pos": "전치사", "meaning": "~와(과)" },
+      { "hanzi": "网上", "pinyin": "wǎngshang", "pos": "명사", "meaning": "온라인" },
+      { "hanzi": "到", "pinyin": "dào", "pos": "동사", "meaning": "도착하다, ~까지" },
+      { "hanzi": "看", "pinyin": "kàn", "pos": "동사", "meaning": "보다" },
+      { "hanzi": "老师", "pinyin": "lǎoshī", "pos": "명사", "meaning": "선생님" },
+      { "hanzi": "听", "pinyin": "tīng", "pos": "동사", "meaning": "듣다" },
+      { "hanzi": "话", "pinyin": "huà", "pos": "명사", "meaning": "말" },
+      { "hanzi": "找", "pinyin": "zhǎo", "pos": "동사", "meaning": "찾다" },
+      { "hanzi": "手机", "pinyin": "shǒujī", "pos": "명사", "meaning": "휴대폰" },
+      { "hanzi": "的", "pinyin": "de", "pos": "조사", "meaning": "~의, ~한 것" },
+      { "hanzi": "一样", "pinyin": "yíyàng", "pos": "형용사", "meaning": "같다" },
+      { "hanzi": "多少", "pinyin": "duōshao", "pos": "의문대명사", "meaning": "얼마, 몇" },
+      { "hanzi": "钱", "pinyin": "qián", "pos": "명사", "meaning": "돈" },
+      { "hanzi": "打折", "pinyin": "dǎzhé", "pos": "동사", "meaning": "할인하다" },
+      { "hanzi": "问", "pinyin": "wèn", "pos": "동사", "meaning": "묻다" },
+      { "hanzi": "只", "pinyin": "zhī", "pos": "양사", "meaning": "마리, 한쪽" },
+      { "hanzi": "筷子", "pinyin": "kuàizi", "pos": "명사", "meaning": "젓가락" },
+      { "hanzi": "手", "pinyin": "shǒu", "pos": "명사", "meaning": "손" },
+      { "hanzi": "袜子", "pinyin": "wàzi", "pos": "명사", "meaning": "양말" },
+      { "hanzi": "衣服", "pinyin": "yīfu", "pos": "명사", "meaning": "옷" },
+      { "hanzi": "大小", "pinyin": "dàxiǎo", "pos": "명사", "meaning": "크기" },
+      { "hanzi": "那个", "pinyin": "nàge", "pos": "대명사", "meaning": "저것" },
+      { "hanzi": "点", "pinyin": "diǎn", "pos": "명사/동사", "meaning": "시, 조금, 주문하다" },
+      { "hanzi": "贵", "pinyin": "guì", "pos": "형용사", "meaning": "비싸다" },
+      { "hanzi": "便宜", "pinyin": "piányi", "pos": "형용사", "meaning": "싸다" },
+      { "hanzi": "(一)点儿", "pinyin": "(yì)diǎnr", "pos": "수량사", "meaning": "조금, 약간" },
+      { "hanzi": "卖", "pinyin": "mài", "pos": "동사", "meaning": "팔다" },
+      { "hanzi": "买", "pinyin": "mǎi", "pos": "동사", "meaning": "사다" },
+      { "hanzi": "斤", "pinyin": "jīn", "pos": "양사", "meaning": "근(500g)" },
+      { "hanzi": "太~了", "pinyin": "tài~le", "pos": "부사", "meaning": "너무 ~하다" },
+      { "hanzi": "等", "pinyin": "děng", "pos": "동사", "meaning": "기다리다" },
+      { "hanzi": "想", "pinyin": "xiǎng", "pos": "동사", "meaning": "생각하다, ~하고 싶다" },
+      { "hanzi": "书包", "pinyin": "shūbāo", "pos": "명사", "meaning": "책가방" },
+      { "hanzi": "要", "pinyin": "yào", "pos": "조동사", "meaning": "~하려고 하다, 원하다" },
+      { "hanzi": "元", "pinyin": "yuán", "pos": "양사", "meaning": "위안" },
+      { "hanzi": "块", "pinyin": "kuài", "pos": "양사", "meaning": "위안, 조각" },
+      { "hanzi": "角", "pinyin": "jiǎo", "pos": "양사", "meaning": "자오" },
+      { "hanzi": "毛", "pinyin": "máo", "pos": "양사", "meaning": "마오" },
+      { "hanzi": "分", "pinyin": "fēn", "pos": "양사", "meaning": "펀" },
+      { "hanzi": "来", "pinyin": "lái", "pos": "동사", "meaning": "오다, ~주세요" },
+      { "hanzi": "咖啡", "pinyin": "kāfēi", "pos": "명사", "meaning": "커피" },
+      { "hanzi": "奶茶", "pinyin": "nǎichá", "pos": "명사", "meaning": "밀크티" },
+      { "hanzi": "再", "pinyin": "zài", "pos": "부사", "meaning": "다시, 또" },
+      { "hanzi": "又", "pinyin": "yòu", "pos": "부사", "meaning": "또, 다시" },
+      { "hanzi": "加", "pinyin": "jiā", "pos": "동사", "meaning": "더하다" },
+      { "hanzi": "明天", "pinyin": "míngtiān", "pos": "명사", "meaning": "내일" },
+      { "hanzi": "昨天", "pinyin": "zuótiān", "pos": "명사", "meaning": "어제" },
+      { "hanzi": "巧克力", "pinyin": "qiǎokèlì", "pos": "명사", "meaning": "초콜릿" },
+      { "hanzi": "蛋糕", "pinyin": "dàngāo", "pos": "명사", "meaning": "케이크" },
+      { "hanzi": "一共", "pinyin": "yígòng", "pos": "부사", "meaning": "모두 합쳐서" },
+      { "hanzi": "都", "pinyin": "dōu", "pos": "부사", "meaning": "모두, 다" },
+      { "hanzi": "请", "pinyin": "qǐng", "pos": "동사", "meaning": "~해 주세요" },
+      { "hanzi": "扫", "pinyin": "sǎo", "pos": "동사", "meaning": "스캔하다" },
+      { "hanzi": "二维码", "pinyin": "èrwéimǎ", "pos": "명사", "meaning": "QR코드" },
+      { "hanzi": "支付", "pinyin": "zhīfù", "pos": "동사", "meaning": "지불하다" },
+      { "hanzi": "和", "pinyin": "hé", "pos": "접속사", "meaning": "~와/과" },
+      { "hanzi": "本", "pinyin": "běn", "pos": "양사", "meaning": "권" },
+      { "hanzi": "词典", "pinyin": "cídiǎn", "pos": "명사", "meaning": "사전" },
+      { "hanzi": "狗", "pinyin": "gǒu", "pos": "명사", "meaning": "개" },
+      { "hanzi": "件", "pinyin": "jiàn", "pos": "양사", "meaning": "벌, 건" },
+      { "hanzi": "瓶", "pinyin": "píng", "pos": "양사", "meaning": "병" },
+      { "hanzi": "水", "pinyin": "shuǐ", "pos": "명사", "meaning": "물" },
+      { "hanzi": "书", "pinyin": "shū", "pos": "명사", "meaning": "책" },
+      { "hanzi": "条", "pinyin": "tiáo", "pos": "양사", "meaning": "벌, 가닥" },
+      { "hanzi": "裤子", "pinyin": "kùzi", "pos": "명사", "meaning": "바지" },
+      { "hanzi": "裙子", "pinyin": "qúnzi", "pos": "명사", "meaning": "치마" },
+      { "hanzi": "绿茶", "pinyin": "lǜchá", "pos": "명사", "meaning": "녹차" },
+      { "hanzi": "百", "pinyin": "bǎi", "pos": "수사", "meaning": "백" },
+      { "hanzi": "千", "pinyin": "qiān", "pos": "수사", "meaning": "천" },
+      { "hanzi": "万", "pinyin": "wàn", "pos": "수사", "meaning": "만" },
+      { "hanzi": "零", "pinyin": "líng", "pos": "수사", "meaning": "영" },
+      { "hanzi": "顶", "pinyin": "dǐng", "pos": "양사", "meaning": "개(모자)" },
+      { "hanzi": "帽子", "pinyin": "màozi", "pos": "명사", "meaning": "모자" },
+      { "hanzi": "不错", "pinyin": "búcuò", "pos": "형용사", "meaning": "좋다, 괜찮다" },
+      { "hanzi": "当然", "pinyin": "dāngrán", "pos": "부사", "meaning": "당연히" },
+      { "hanzi": "说", "pinyin": "shuō", "pos": "동사", "meaning": "말하다" },
+      { "hanzi": "大", "pinyin": "dà", "pos": "형용사", "meaning": "크다" },
+      { "hanzi": "小", "pinyin": "xiǎo", "pos": "형용사", "meaning": "작다" },
+      { "hanzi": "稍", "pinyin": "shāo", "pos": "부사", "meaning": "잠시, 약간" },
+      { "hanzi": "原价", "pinyin": "yuánjià", "pos": "명사", "meaning": "원가, 정가" },
+      { "hanzi": "现价", "pinyin": "xiànjià", "pos": "명사", "meaning": "현재가" },
+      { "hanzi": "北京烤鸭", "pinyin": "Běijīng kǎoyā", "pos": "명사", "meaning": "베이징 오리구이" },
+      { "hanzi": "网络游戏", "pinyin": "wǎngluò yóuxì", "pos": "명사", "meaning": "온라인 게임" },
+      { "hanzi": "绿色", "pinyin": "lǜsè", "pos": "명사", "meaning": "녹색" },
+      { "hanzi": "种", "pinyin": "zhǒng", "pos": "양사", "meaning": "종류" },
+      { "hanzi": "比较", "pinyin": "bǐjiào", "pos": "부사", "meaning": "비교적" },
+      { "hanzi": "台", "pinyin": "tái", "pos": "양사", "meaning": "대" },
+      { "hanzi": "电脑", "pinyin": "diànnǎo", "pos": "명사", "meaning": "컴퓨터" },
+      { "hanzi": "速度", "pinyin": "sùdù", "pos": "명사", "meaning": "속도" },
+      { "hanzi": "快", "pinyin": "kuài", "pos": "형용사", "meaning": "빠르다" },
+      { "hanzi": "慢", "pinyin": "màn", "pos": "형용사", "meaning": "느리다" },
+      { "hanzi": "好看", "pinyin": "hǎokàn", "pos": "형용사", "meaning": "보기 좋다" },
+      { "hanzi": "短", "pinyin": "duǎn", "pos": "형용사", "meaning": "짧다" },
+      { "hanzi": "长", "pinyin": "cháng", "pos": "형용사", "meaning": "길다" },
+      { "hanzi": "热", "pinyin": "rè", "pos": "형용사", "meaning": "덥다" },
+      { "hanzi": "冷", "pinyin": "lěng", "pos": "형용사", "meaning": "춥다" },
+      { "hanzi": "高", "pinyin": "gāo", "pos": "형용사", "meaning": "높다, 크다" },
+      { "hanzi": "矮", "pinyin": "ǎi", "pos": "형용사", "meaning": "작다, 낮다" },
+      { "hanzi": "离", "pinyin": "lí", "pos": "전치사", "meaning": "~에서" },
+      { "hanzi": "北京大学", "pinyin": "Běijīng Dàxué", "pos": "명사", "meaning": "베이징 대학교" },
+      { "hanzi": "近", "pinyin": "jìn", "pos": "형용사", "meaning": "가깝다" },
+      { "hanzi": "远", "pinyin": "yuǎn", "pos": "형용사", "meaning": "멀다" },
+      { "hanzi": "地方", "pinyin": "dìfang", "pos": "명사", "meaning": "장소, 곳" },
+      { "hanzi": "运动鞋", "pinyin": "yùndòngxié", "pos": "명사", "meaning": "운동화" },
+      { "hanzi": "支", "pinyin": "zhī", "pos": "양사", "meaning": "자루" },
+      { "hanzi": "笔", "pinyin": "bǐ", "pos": "명사", "meaning": "펜" },
+      { "hanzi": "真", "pinyin": "zhēn", "pos": "부사", "meaning": "정말" },
+      { "hanzi": "学生证", "pinyin": "xuéshēngzhèng", "pos": "명사", "meaning": "학생증" },
+      { "hanzi": "拿", "pinyin": "ná", "pos": "동사", "meaning": "가지다" },
+      { "hanzi": "就", "pinyin": "jiù", "pos": "부사", "meaning": "곧, 바로" },
+      { "hanzi": "只要", "pinyin": "zhǐyào", "pos": "접속사", "meaning": "~하기만 하면" },
+      { "hanzi": "怎么", "pinyin": "zěnme", "pos": "의문대명사", "meaning": "어떻게, 왜" },
+      { "hanzi": "漂亮", "pinyin": "piàoliang", "pos": "형용사", "meaning": "예쁘다" },
+      { "hanzi": "才", "pinyin": "cái", "pos": "부사", "meaning": "비로소, 이제야" },
+      { "hanzi": "写", "pinyin": "xiě", "pos": "동사", "meaning": "쓰다" },
+      { "hanzi": "呀", "pinyin": "ya", "pos": "어기조사", "meaning": "아, 야" },
+      { "hanzi": "在", "pinyin": "zài", "pos": "부사", "meaning": "~하고 있다" },
+      { "hanzi": "正在", "pinyin": "zhèngzài", "pos": "부사", "meaning": "마침 ~하고 있다" },
+      { "hanzi": "呢", "pinyin": "ne", "pos": "어기조사", "meaning": "~는요?" },
+      { "hanzi": "最近", "pinyin": "zuìjìn", "pos": "명사", "meaning": "최근, 요즘" },
+      { "hanzi": "好", "pinyin": "hǎo", "pos": "형용사", "meaning": "좋다" },
+      { "hanzi": "能", "pinyin": "néng", "pos": "조동사", "meaning": "~할 수 있다" },
+      { "hanzi": "跑", "pinyin": "pǎo", "pos": "동사", "meaning": "달리다" },
+      { "hanzi": "进", "pinyin": "jìn", "pos": "동사", "meaning": "들어가다" },
+      { "hanzi": "新款", "pinyin": "xīnkuǎn", "pos": "명사", "meaning": "신상품" },
+      { "hanzi": "已经", "pinyin": "yǐjing", "pos": "부사", "meaning": "이미" },
+      { "hanzi": "最", "pinyin": "zuì", "pos": "부사", "meaning": "가장" },
+      { "hanzi": "低", "pinyin": "dī", "pos": "형용사", "meaning": "낮다" },
+      { "hanzi": "价格", "pinyin": "jiàgé", "pos": "명사", "meaning": "가격" },
+      { "hanzi": "出示", "pinyin": "chūshì", "pos": "동사", "meaning": "제시하다" },
+      { "hanzi": "给", "pinyin": "gěi", "pos": "전치사", "meaning": "~에게" },
+      { "hanzi": "外边", "pinyin": "wàibian", "pos": "명사", "meaning": "밖" },
+      { "hanzi": "雪", "pinyin": "xuě", "pos": "명사", "meaning": "눈" },
+      { "hanzi": "音乐", "pinyin": "yīnyuè", "pos": "명사", "meaning": "음악" },
+      { "hanzi": "复习", "pinyin": "fùxí", "pos": "동사", "meaning": "복습하다" },
+      { "hanzi": "日记", "pinyin": "rìjì", "pos": "명사", "meaning": "일기" },
+      { "hanzi": "上午", "pinyin": "shàngwǔ", "pos": "명사", "meaning": "오전" },
+      { "hanzi": "下午", "pinyin": "xiàwǔ", "pos": "명사", "meaning": "오후" }
     ];
 
     let currentIndex = 0, isFlipped = false;
     let quizScoreCount = 0, quizTotalCount = 0, currentQuizWord = null, quizAnswered = false;
 
-    // --- 🎨 한자 & 병음 개별 음절/글자별 성조 색상 분석기 ---
+    function removeTones(str) {
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/ü/g, "v")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+    }
+
     function getToneClass(syllable) {
       if (/[āēīōūǖĀĒĪŌŪǕ]/.test(syllable)) return "t1";
       if (/[áéíóúǘÁÉÍÓÚǗ]/.test(syllable)) return "t2";
@@ -377,7 +385,6 @@
       return "t0";
     }
 
-    // 연속된 병음을 개별 음절 단위로 정밀 분할
     function splitPinyinSyllables(text) {
       const initials = ['zh', 'ch', 'sh', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'j', 'q', 'x', 'r', 'z', 'c', 's', 'y', 'w'];
       const vowels = "aeiouüāēīōūǖáéíóúǘǎěǐǒǔǚàèìòùǜAEIOUÜĀĒĪŌŪǕÁÉÍÓÚǗǍĚǏǑǓǙÀÈÌÒÙǛ";
@@ -429,7 +436,6 @@
       return result;
     }
 
-    // 한자와 병음에 글자별 성조 색상 클래스 적용
     function formatHanziAndPinyin(hanzi, pinyin) {
       const syls = splitPinyinSyllables(pinyin);
       let pinyinTones = [];
@@ -468,7 +474,6 @@
       };
     }
 
-    // TTS 발음 재생
     function speakWord(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -479,7 +484,6 @@
     }
     function speakCurrentWord() { speakWord(words[currentIndex].hanzi); }
 
-    // 플래시카드 로직
     function renderCard() {
       document.getElementById("card").classList.remove("flipped");
       isFlipped = false;
@@ -499,7 +503,6 @@
     function prevCard() { if (currentIndex > 0) { currentIndex--; renderCard(); } }
     function shuffleCards() { words.sort(() => Math.random() - 0.5); currentIndex = 0; renderCard(); renderTable(); }
 
-    // 퀴즈 로직
     function nextQuiz() {
       quizAnswered = false;
       currentQuizWord = words[Math.floor(Math.random() * words.length)];
@@ -535,7 +538,6 @@
       });
     }
 
-    // --- 🎮 단어 산성비 게임 엔진 ---
     let rainLoop = null, spawnLoop = null;
     let activeRainWords = [], rainScore = 0, rainLives = 3;
 
@@ -586,12 +588,19 @@
 
     function checkRainInput(e) {
       if (e.key === 'Enter') {
-        const val = e.target.value.trim().toLowerCase();
+        const rawVal = e.target.value.trim().toLowerCase();
+        const cleanVal = removeTones(rawVal);
         let hitIndex = -1;
 
         activeRainWords.forEach((item, idx) => {
-          const cleanPinyin = item.word.pinyin.toLowerCase().replace(/[^a-z]/g, '');
-          if (val === item.word.meaning || val === cleanPinyin || val === item.word.pinyin.toLowerCase()) {
+          const targetMeaning = item.word.meaning.trim().toLowerCase();
+          const targetPinyinClean = removeTones(item.word.pinyin);
+
+          if (
+            rawVal === targetMeaning ||
+            cleanVal === targetPinyinClean ||
+            rawVal === item.word.pinyin.toLowerCase()
+          ) {
             hitIndex = idx;
           }
         });
@@ -613,7 +622,6 @@
       }
     }
 
-    // --- 🧩 짝맞추기 게임 엔진 ---
     let matchSelected = [], matchedPairs = 0;
     function initMatchGame() {
       matchedPairs = 0; matchSelected = [];
@@ -664,7 +672,6 @@
       });
     }
 
-    // 탭 전환
     function switchTab(t) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('cardView').style.display = 'none';
